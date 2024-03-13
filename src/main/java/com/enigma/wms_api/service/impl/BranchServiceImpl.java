@@ -1,6 +1,9 @@
 package com.enigma.wms_api.service.impl;
 
 import com.enigma.wms_api.dto.request.BranchSearchDTO;
+import com.enigma.wms_api.dto.request.branch.BranchCreateRequest;
+import com.enigma.wms_api.dto.response.BranchResponse;
+import com.enigma.wms_api.dto.response.ControllerResponse;
 import com.enigma.wms_api.entity.Branch;
 import com.enigma.wms_api.repository.BranchRepository;
 import com.enigma.wms_api.service.BranchService;
@@ -60,5 +63,41 @@ public class BranchServiceImpl implements BranchService {
     @Override
     public void delete(String id) {
         branchRepository.deleteById(id);
+    }
+
+    @Override
+    public ControllerResponse<?> createBranchWithDto(BranchCreateRequest request) {
+        //mapping isi dari CreateRequest ke branchnya biar di build
+        Branch branch = Branch.builder()
+                //cara bacanya : set BranchName = Request.GetName
+                .branchName(request.getName())
+                //cara bacanya : set BranchCode = Request.GetCode
+                .branchCode(request.getCode())
+                //silahkan lanjut lgi buat mapping fieldnya
+
+                //klo udah build
+                .build();
+        branchRepository.save(branch);
+
+        //bungkus hasil Branch ke dalem BranchResponse
+        BranchResponse branchResponse = BranchResponse.builder()
+                //.id itu liat dari field BranchResponse, sesuaikan
+                .id(branch.getId())
+                .name(branch.getBranchName())
+                //tambah field lain
+                //.namaField(isiValue)
+                //klo udah build
+                .build();
+
+        //bungkus BranchResponsenya kedalem Controller Response
+        //ControllerResponse<?> artinya ControllerResponse bisa menampung berbagai macam Object bisa Class, Bisa List, Bisa Page
+        //kalo ditulis ControllerResponse<BranchResponse> berarti dia hanya mau nampung BranchResponse
+        ControllerResponse<BranchResponse> response = ControllerResponse.<BranchResponse>builder()
+                .status(HttpStatus.CREATED.getReasonPhrase())
+                .message("Branch Created")
+                .data(branchResponse)
+                .build();
+
+        return  response;
     }
 }

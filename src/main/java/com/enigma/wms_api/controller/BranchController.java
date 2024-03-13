@@ -1,6 +1,7 @@
 package com.enigma.wms_api.controller;
 
 import com.enigma.wms_api.dto.request.BranchSearchDTO;
+import com.enigma.wms_api.dto.request.branch.BranchCreateRequest;
 import com.enigma.wms_api.dto.response.ControllerResponse;
 import com.enigma.wms_api.dto.response.PageResponseWrapper;
 import com.enigma.wms_api.entity.Branch;
@@ -74,5 +75,15 @@ public class BranchController {
     @DeleteMapping("/{id}")
     public void deleteBranch(@PathVariable String id){
         branchService.delete(id);
+    }
+
+    @PostMapping("/dto")
+    public ResponseEntity<?> createBranchWithDto(BranchCreateRequest request){
+        ControllerResponse<?> response = branchService.createBranchWithDto(request);
+
+        ResponseEntity result = ResponseEntity.status(HttpStatus.CREATED)
+                .body(response);
+
+        return  result;
     }
 }

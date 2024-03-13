@@ -1,6 +1,8 @@
 package com.enigma.wms_api.controller;
 
 import com.enigma.wms_api.dto.request.BranchSearchDTO;
+import com.enigma.wms_api.dto.request.branch.BranchCreateRequest;
+import com.enigma.wms_api.dto.request.branch.BranchUpdateRequest;
 import com.enigma.wms_api.dto.response.ControllerResponse;
 import com.enigma.wms_api.dto.response.PageResponseWrapper;
 import com.enigma.wms_api.entity.Branch;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -25,38 +28,13 @@ public class BranchController {
     private final BranchService branchService;
 
     @PostMapping
-    public ResponseEntity<?> createBranch(Branch branch){
-        String message = ConstantMessage.getMessage("Branch");
+    public ResponseEntity<?> createBranchWithDto(BranchCreateRequest request){
+        ControllerResponse<?> response = branchService.createBranchWithDto(request);
 
-        Branch branch1 = branchService.createBranch(branch);
-        ControllerResponse<Branch> response =ControllerResponse.<Branch>builder()
-                .status(HttpStatus.CREATED.getReasonPhrase())
-                .message(message)
-                .data(branch1)
-                .build();
-        return ResponseEntity.status(HttpStatus.CREATED)
+        ResponseEntity result = ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
-    }
 
-//    get all branch and get branch with filter using DTO
-    @GetMapping
-    public ResponseEntity<?> getBranchPerPage(
-            @RequestParam(name = "page", defaultValue = "0") Integer page,
-            @RequestParam(name = "size", defaultValue = "5") Integer size,
-            @RequestParam(name = "sort-by", defaultValue = "name") String sortBy,
-            @RequestParam(name = "direction", defaultValue = "ASC") String direction,
-            @RequestParam(name = "branch_code", required = false) String branchCode,
-            @RequestParam(name = "branch_name", required = false) String branchName,
-            @RequestParam(name = "address", required = false) String address,
-            @RequestParam(name = "phone_number", required = false) String phoneNumber
-    ){
-        BranchSearchDTO branchSearchDTO = new BranchSearchDTO(branchCode, branchName, address, phoneNumber);
-        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Branch> resultPage = branchService.getBranchPerPage(pageable, branchSearchDTO);
-        PageResponseWrapper<Branch> branchPageResponseWrapper =new PageResponseWrapper<>(resultPage);
-
-        return ResponseEntity.status(HttpStatus.OK).body(branchPageResponseWrapper);
+        return  result;
     }
 
     @GetMapping("/{id}")
@@ -65,14 +43,23 @@ public class BranchController {
         return ResponseEntity.status(HttpStatus.OK).body(branch);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBranch(@PathVariable String id, Branch branch){
-        Branch update = branchService.update(id, branch);
-        return ResponseEntity.status(HttpStatus.OK).body(update);
+    @PutMapping("/dto/update")
+    public ResponseEntity<?> updateBranchWithDto(@PathVariable String id, BranchUpdateRequest request){
+        ControllerResponse<?> response = branchService.updateBranchWithDto(id, request);
+
+        ResponseEntity result = ResponseEntity.status(HttpStatus.CREATED)
+                .body(response);
+
+        return  result;
     }
 
     @DeleteMapping("/{id}")
     public void deleteBranch(@PathVariable String id){
         branchService.delete(id);
+    }
+
+    @GetMapping
+    public List<Branch> getAllBranches(Branch branch) {
+        return branchService.getAllBranch(branch);
     }
 }
